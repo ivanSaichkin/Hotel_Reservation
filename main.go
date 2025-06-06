@@ -27,15 +27,23 @@ func main() {
 		log.Fatal(err)
 	}
 
-	userHandler := api.NewUserHandler(db.NewMongoUserStore(client, db.DBNAME))
+	var (
+		userHandler  = api.NewUserHandler(db.NewMongoUserStore(client, db.DBNAME))
+		hotelStore   = db.NemMongoHotelStore(client)
+		roomStore    = db.NemMongoRoomStore(client, hotelStore)
+		hotelHandler = api.NewHotelHandler(hotelStore, roomStore)
+		app          = fiber.New(config)
+		apiv1        = app.Group("api/v1")
+	)
 
-	app := fiber.New(config)
-	apiv1 := app.Group("api/v1")
-
+	//user handlers
 	apiv1.Put("/user/:id", userHandler.HandlePutUser)
 	apiv1.Delete("/user/:id", userHandler.HandleDeleteUser)
 	apiv1.Post("/user", userHandler.HandlePostUser)
 	apiv1.Get("/user", userHandler.HandleGetUsers)
 	apiv1.Get("/user/:id", userHandler.HandleGetUser)
+
+	//hotel handlers
+	apiv1.Get("/hotel", hotelHandler.HandleGetHotels)
 	app.Listen(*listenAddr)
 }
