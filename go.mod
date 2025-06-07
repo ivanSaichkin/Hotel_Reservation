@@ -1,8 +1,6 @@
 module github.com/GoDev/Hotel-reservatrion
 
-go 1.23.0
-
-toolchain go1.24.3
+go 1.24.3
 
 require (
 	github.com/gofiber/fiber/v2 v2.52.8
