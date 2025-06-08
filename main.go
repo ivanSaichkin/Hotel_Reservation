@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
+	"time"
 
 	"github.com/GoDev/Hotel-reservatrion/api"
 	"github.com/GoDev/Hotel-reservatrion/api/middleware"
@@ -20,6 +22,8 @@ var config = fiber.Config{
 }
 
 func main() {
+	now := time.Now()
+	fmt.Println(now)
 	listenAddr := flag.String("listenAddr", ":5000", "The listen address of the API server")
 	flag.Parse()
 
@@ -40,9 +44,10 @@ func main() {
 		hotelHandler = api.NewHotelHandler(store)
 		userHandler  = api.NewUserHandler(userStore)
 		authHandler  = api.NewAuthHandler(userStore)
+		roomHandler  = api.NewRoomHandler(store)
 		app          = fiber.New(config)
 		auth         = app.Group("/api")
-		apiv1        = app.Group("api/v1", middleware.JWTAuthentication)
+		apiv1        = app.Group("api/v1", middleware.JWTAuthentication(userStore))
 	)
 
 	//auth
@@ -59,5 +64,7 @@ func main() {
 	apiv1.Get("/hotel", hotelHandler.HandleGetHotels)
 	apiv1.Get("/hotel/:id/rooms", hotelHandler.HandleGetRooms)
 	apiv1.Get("/hotel/:id", hotelHandler.HandleGetHotel)
+
+	apiv1.Post("/room/:id/book", roomHandler.HandleBookRoom)
 	app.Listen(*listenAddr)
 }
