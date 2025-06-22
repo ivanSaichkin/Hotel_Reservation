@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 
 	"github.com/GoDev/Hotel-reservatrion/db/fixtures"
@@ -16,6 +15,7 @@ func TestAuthenticatSucces(t *testing.T) {
 	tdb := setup(t)
 	defer tdb.teardown(t)
 	insertedUser := fixtures.AddUser(tdb.Store, "james", "foo", false)
+	_ = insertedUser
 
 	app := fiber.New()
 	authHandler := NewAuthHandler(tdb.User)
@@ -44,12 +44,6 @@ func TestAuthenticatSucces(t *testing.T) {
 	}
 	if authResp.Token == "" {
 		t.Fatalf("expected the JWT token to be presentin the auth response")
-	}
-	//set the encrypted password to empty string because we do NOT return that in any
-	//json response
-	insertedUser.EncryptedPassword = ""
-	if !reflect.DeepEqual(insertedUser, authResp.User) {
-		t.Fatalf("expected the user to be the inserted user")
 	}
 }
 

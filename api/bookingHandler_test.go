@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/GoDev/Hotel-reservatrion/api/middleware"
 	"github.com/GoDev/Hotel-reservatrion/db/fixtures"
 	"github.com/GoDev/Hotel-reservatrion/types"
 	"github.com/gofiber/fiber/v2"
@@ -29,7 +28,7 @@ func TestUserGetBooking(t *testing.T) {
 		booking = fixtures.AddBooking(db.Store, user.ID, room.ID, from, till)
 
 		app            = fiber.New()
-		route          = app.Group("/", middleware.JWTAuthentication(db.User))
+		route          = app.Group("/", JWTAuthentication(db.User))
 		bookinghandler = NewBookingHandler(db.Store)
 	)
 
@@ -84,8 +83,8 @@ func TestAdminGetBookings(t *testing.T) {
 		till    = from.AddDate(0, 0, 5)
 		booking = fixtures.AddBooking(db.Store, user.ID, room.ID, from, till)
 
-		app            = fiber.New()
-		admin          = app.Group("/", middleware.JWTAuthentication(db.User), middleware.AdminAuth)
+		app            = fiber.New(fiber.Config{ErrorHandler: ErrorHandler})
+		admin          = app.Group("/", JWTAuthentication(db.User), AdminAuth)
 		bookinghandler = NewBookingHandler(db.Store)
 	)
 
@@ -125,7 +124,7 @@ func TestAdminGetBookings(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StatusCode == http.StatusOK {
-		t.Fatalf("expected a non 200 status code got %d", resp.StatusCode)
+	if resp.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("expected a 401 status code got %d", resp.StatusCode)
 	}
 }
